@@ -3,7 +3,7 @@
 #SBATCH --job-name=llama2
 #SBATCH --gres=gpu:A6000:4
 #SBATCH --partition=short-inst
-#SBATCH --time=8:00:00
+#SBATCH --time=3:00:00
 #SBATCH --mail-type=end
 #SBATCH --mail-user=zw3@cs.cmu.edu
 

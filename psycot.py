@@ -1,15 +1,17 @@
 import pandas as pd
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
+from langchain.chat_models import ChatOpenAI
 from langchain.llms import OpenAI, VLLM
 from langchain.chains import LLMChain
 import tiktoken
-from langchain import ConversationChain
 from langchain.memory import ConversationBufferMemory
 import pickle
 import os
+import torch
 
-# os.environ["OPENAI_API_KEY"]= "YOUR API KEY"
+os.environ["OPENAI_API_KEY"]= ""
+os.environ["TIKTOKEN_CACHE_DIR"] = "/home/zw3/Assignment-3-ANLP/tmp"
 task = 'con'
 rev_label = False
 file_name = "essay_test_zero_psycot_{}.csv".format(task)
@@ -27,7 +29,7 @@ if task == 'agr':
           'The author can be rude sometimes.',
           'The author always forgives others easily.',
           'The author is always kind to everyone.',
-          'The author sometimes notices other people’s faults.']
+          'The author sometimes notices other people\'s faults.']
   if not rev_label:
     trait_choice = 'A: "High Agreeableness" or B: "Low Agreeableness"'
   else:
@@ -95,23 +97,25 @@ elif task == 'opn':
   else:
     trait_choice = 'A: "Low Openness" or B: "High Openness"'
   state_intro = 'Note that S0, S1, S2, S3, S4, S5, S7, S9, with higher scores indicate higher openness, while for S6 and S8, with higher scores indicate lower openness.'
+torch.cuda.empty_cache()
+model_id = "/data/datasets/models/huggingface/meta-llama/Llama-2-70b-chat-hf"
+llm = VLLM(model=model_id, tensor_parallel_size=4, gpu_memory_utilization=0.95, top_k=1, stop=['\n','.','<\s>','nHuman','Human'], max_new_tokens=7)
 
 def cteat_agent(num_ques, trait_choice, state_intro, text):
-  perfix_temp = 'You are an AI assistant who specializes in text analysis and I am Human. We will complete a text analysis task together through a multi-turn dialogue. '\
+  perfix_temp = '<s>[INST] <<SYS>>\nYou are an AI assistant who specializes in text analysis and I am Human. We will complete a text analysis task together through a multi-turn dialogue. '\
           'The task as follows: we have a text written by an author, and at each turn I will give you a statement about the author. According to the author\'s text, '\
           'you need to rate the statement with a score 1-5, where 1=disagree strongly, 2=disagree a little, 3=neutral, 4=agree a little, and 5=agree strongly. '\
-          'After rating all the statements (S0-S{}), I will ask you if the author is more likely to be {}, and then you need to give your choice. {}\nAUTHOR\'S TEXT: {}\n'.format(num_ques, trait_choice, state_intro, text)
+          'After rating all the statements (S0-S{}), I will ask you if the author is more likely to be {}, and then you need to give your choice. {}\n<</SYS>>\n\nAUTHOR\'S TEXT: {}\n'.format(num_ques, trait_choice, state_intro, text)
   Prompt_temp = perfix_temp + \
           '{history}\n'\
           'Human: {human}\n'\
-          'Assistant: '
+          'Assistant: [/INST]'
   prompt = PromptTemplate(
       input_variables=["history", "human"],
       template=Prompt_temp)
   memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant', memory_key="history")
-#   llm = OpenAI(temperature=0.0, model_name='gpt-3.5-turbo-0301')
-  model_id = "/data/datasets/models/huggingface/meta-llama/Llama-2-70b-chat-hf"
-  llm = VLLM(model=model_id, tensor_parallel_size=4, gpu_memory_utilization=0.9, top_k=1)
+  # llm = ChatOpenAI(temperature=0.0, model='gpt-3.5-turbo-0301')
+  
   agent = LLMChain(llm=llm, prompt=prompt, verbose=False, memory=memory,)
   return agent
 
@@ -128,6 +132,7 @@ else:
 print('Done: {}/{}'.format(rest_sample, len(texts)))
 tokenizer = tiktoken.get_encoding("cl100k_base")
 for i in range(rest_sample, len(texts)):
+# for i in range(rest_sample, 3):
   print('Done: {}/{}'.format(i, len(texts)))
   text = tokenizer.decode(tokenizer.encode(texts[i])[:3200]).replace('{', '').replace('}', '')
   agent = cteat_agent(len(qa_list)-1, trait_choice, state_intro, text)
