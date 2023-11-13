@@ -1,8 +1,0 @@
-/home/zw3/miniconda3/envs/psycot/lib/python3.10/site-packages/langchain/__init__.py:34: UserWarning: Importing ConversationChain from langchain root module is no longer supported. Please use langchain.chains.ConversationChain instead.
-  warnings.warn(
-['The author tends to be lazy.', 'The author can be kind of careless.', 'The author does things quickly and carefully.', 'The author does things carefully and completely.', "The author isn't very organized.", 'The author makes plans and sticks to them.', 'The author is a good, hard worker.', 'The author has trouble paying attention.', 'The author keeps working until things are done.']
-Done: 0/247
-Done: 0/247
-2023-11-12 17:38:30,660	INFO worker.py:1673 -- Started a local Ray instance.
-INFO 11-12 17:38:48 llm_engine.py:72] Initializing an LLM engine with config: model='/data/datasets/models/huggingface/meta-llama/Llama-2-70b-chat-hf', tokenizer='/data/datasets/models/huggingface/meta-llama/Llama-2-70b-chat-hf', tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=4, quantization=None, seed=0)
-INFO 11-12 17:38:48 tokenizer.py:31] For some LLaMA V1 models, initializing the fast tokenizer may take a long time. To reduce the initialization time, consider using 'hf-internal-testing/llama-tokenizer' instead of the original tokenizer.
