@@ -19,7 +19,7 @@ model_id = "/data/datasets/models/huggingface/meta-llama/Llama-2-70b-chat-hf"
 llm = VLLM(model=model_id, tensor_parallel_size=4, gpu_memory_utilization=0.97, top_k=1,
            stop=['\n', '.', '<\s>', 'nHuman', 'Human'], max_new_tokens=7)
 
-tasks = ['1', '2', '3']
+tasks = ['3']
 
 for task in tasks:
     rev_label = False
